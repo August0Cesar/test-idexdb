@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndexDB test</title>
+</head>
+
+<body>
+    <h3>Teste indexedDB </h3>
+    <button onclick="addUsers()">Create Users</button>
+    <button onclick="getAllUsers()">Get All Users</button>
+    <button onclick="cleanUsers()">Clean Users</button>
+
+    <br />
+    <br />
+    <table>
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>NOME</td>
+            </tr>
+        </thead>
+        <tbody id="tbdoy">
+
+        </tbody>
+    </table>
+
+    <script>
+        var db;
+
+        var customerData = [
+            { "id": 1, "nome": "Augusto" },
+            { "id": 2, "nome": "Murilo" },
+            { "id": 3, "nome": "Breno" },
+            { "id": 4, "nome": "Vinicus" }
+        ];
+
+        window.addEventListener('load', (event) => {
+            db = openDb();
+            console.log('Augusto kkkk');
+        });
+
+
+        function openDb() {
+
+            const request = window.indexedDB.open("MyTestDatabase", 1);
+
+            request.onsuccess = (event) => {
+                console.log(event);
+                db = event.target.result;
+            }
+
+            request.onerror = (event) => {
+                console.log(event);
+            }
+
+            request.onupgradeneeded = (event) => {
+                // Save the IDBDatabase interface
+                const db = event.target.result;
+
+                // Create an objectStore for this database
+                const objectStore = db.createObjectStore("clients", { keyPath: "id" });
+            };
+        }
+
+        function addUsers() {
+            const transaction = db.transaction(["clients"], "readwrite");
+            transaction.oncomplete = (event) => {
+                console.log("All done!");
+            };
+
+            transaction.onerror = (event) => {
+                // Don't forget to handle errors!
+            };
+
+            const objectStore = transaction.objectStore("clients");
+
+            customerData.forEach((customer) => {
+                const request = objectStore.add(customer);
+                request.onsuccess = (event) => {
+                    console.log(event);
+                    // event.target.result === customer.ssn;
+                };
+            });
+        }
+
+        function getAllUsers() {
+            const transaction = db.transaction(["clients"], "readwrite");
+            transaction.oncomplete = (event) => {
+                // console.log(event);
+            };
+
+            transaction.onerror = (event) => {
+                // Don't forget to handle errors!
+            };
+
+            const objectStore = transaction.objectStore("clients");
+            var request = objectStore.getAll(); 
+            request.onsuccess = (event) => {
+                var linha = "";
+
+                event.target.result.forEach((client) => {
+                    linha += 
+                        `<tr>
+                            <td>${client.id}</td>
+                            <td>${client.nome}</td>
+                        <tr>
+                        `;
+                });
+
+
+                document.getElementById("tbdoy").innerHTML = linha;
+            };
+        }
+
+        function cleanUsers(){
+            const transaction = db.transaction(["clients"], "readwrite");
+            transaction.oncomplete = (event) => {
+                console.log("All done!");
+            };
+
+            transaction.onerror = (event) => {
+                // Don't forget to handle errors!
+            };
+
+            const objectStore = transaction.objectStore("clients");
+            customerData.forEach((client) => {
+                const request = objectStore.delete(client.id);
+                request.onsuccess = (event) => {
+                    console.log("Deletado com sucesso!");
+                };
+
+                document.getElementById("tbdoy").innerHTML = ``;
+            });
+        }
+
+    </script>
+
+
+</body>
+
+</html>
